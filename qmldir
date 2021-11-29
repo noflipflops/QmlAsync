@@ -1,0 +1,8 @@
+singleton Coroutine 1.0 Coroutine.qml
+singleton Async 1.0 Async.qml
+
+CoroutineExecutor 1.0 CoroutineExecutor.qml
+
+Task 1.0 Task.qml
+
+Main 1.0 Main.qml
