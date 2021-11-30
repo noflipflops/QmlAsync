@@ -111,22 +111,22 @@ Pane{
 
         }
 
+        CheckBox{
+            id: checkbox2
+        }
+
         Condition{
             id: condition
-            predicate: ()=>checkbox.checked
+            predicate: function(){
+                return checkbox.checked && checkbox2.checked
+            }
         }
-
-
-        CheckBox{
-            checked: condition.finished
-        }
-
 
 
         QtObject{
             id: common
             property var commonTask:Async.startTask(function*(){
-                throw new Error("I don't wanna work today")
+                //throw new Error("I don't wanna work today")
                 console.error("commonTask 0")
                 yield Async.delay(2000)
                 console.error("commonTask 1")
@@ -143,7 +143,12 @@ Pane{
             id: task
             objectName: "task"
             iterable: function*(){
-                console.log("commonTask returned ", yield common.commonTask)
+                //console.log("commonTask returned ", yield common.commonTask)
+
+                yield Async.condition(()=>checkbox.checked)
+                //checkbox2.checked = true
+
+
                 console.error("0")
                 yield Async.delay(2000)
                 console.error("1")
@@ -159,7 +164,7 @@ Pane{
             id: task2
             objectName: "task2"
             iterable: function*(){
-                console.log("commonTask returned ", yield common.commonTask)
+                yield condition
                 console.error("task2 0")
                 yield Async.delay(2000)
                 console.error("task2 1")

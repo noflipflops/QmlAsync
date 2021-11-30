@@ -12,8 +12,8 @@ QtObject {
         }
     }*/
 
-    function delay(miliseconds){
-        var obj = delayComponent.createObject(null,{interval: miliseconds})
+    function delay(interval){
+        var obj = delayComponent.createObject(null,{interval: interval})
         return obj
     }
 
@@ -36,6 +36,16 @@ QtObject {
         var obj = taskComponent.createObject(null,{iterable: generator()})
         return obj
     }
+
+
+
+    property var conditionComponent: Qt.createComponent("Condition.qml");
+
+    function condition(predicate){
+        var obj = conditionComponent.createObject(null,{predicate: predicate})
+        return obj
+    }
+
 
 
     function _iterableExecute(iterable, previousResult){
