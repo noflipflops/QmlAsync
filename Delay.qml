@@ -1,5 +1,4 @@
 import QtQml 2.15
-import QtQuick 2.15
 
 Timer {
     property int value: 0
@@ -16,7 +15,7 @@ Timer {
     repeat: false
 
     onTriggered: {
-        console.log("onTriggered")
+        console.log("Delay ",objectName," finished")
         //running = false
         finished = true
     }

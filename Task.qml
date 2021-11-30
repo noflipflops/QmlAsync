@@ -8,114 +8,114 @@ QtObject {
     property bool finished : false
 
     property var iterable
+    //property var previousResult
 
-
-
-
-
+    //property var subtask
 
     //property var th: root
-    onIterableChanged: {
-        if (!finished){
 
+
+    onIterableChanged: {
+        if (!πCompleted) return
+
+        if (!finished){
+            πFinalize()
+        }
+        if (iterable){
+            πRun()
         }
     }
 
+    property bool πCompleted: false
+
     Component.onCompleted: {
-        πInternal = πInitInternal()
-        πInternal.iteration()
+        πCompleted = true
+        if (iterable){
+            πRun()
+        }
         //Async.keepAlive(root)
     }
 
-    property var πInternal : πInitInternal
-
-    function πInitInternal(){
-
-        var previousResult = undefined
-        var subtask = null
-
-        function iteration(){
-            while (true){
-                let iterableResult = undefined
-                try{
-                    if (exception){
-                        iterableResult = iterable.throw(exception)
-                        exception = undefined
-                    } else {
-                        iterableResult = iterable.next(previousResult)
-                    }
-                } catch (e){
-                    exception = e
-                    return
-                }
-
-
-                if (iterableResult.done){
-                    result = iterableResult.value
-                    finish()
-                    return;
-                }
-
-                if (Async.isTask(iterableResult.value)){
-                    subtask = iterableResult.value
-                    if (subtask.finished){
-                        previousResult = subtask.result
-                        root.exception = subtask.exception
-                        subtask = null
-                        continue;
-                    }
-
-                    subtask.onFinishedChanged.connect(resume)
-
-                    //subtask.then =  resume //onFinishedChanged.connect(resume)
-                    return
-
-                } else {
-
-
-                }
-            }
-        }
-
-
-        function resume(){
-            subtask.onFinishedChanged.disconnect(resume)
-            previousResult = subtask.result
-            root.exception = subtask.exception
-            subtask = null
-            iteration()
-        }
-
-        function funalize(){
-            if (subtask) subtask.onFinishedChanged.disconnect(resume)
-            subtask = null
-        }
-
-        return {
-            iteration: iteration,
-            resume: resume,
-            funalize: funalize
-        }
-    }
-
-
-
-
-
-    function finish(){
+    /*function finish(){
         finished = true
         //delete Async._keepAlive[root]
+    }*/
+
+    property var πState
+
+    function πRun(){
+        πState = {
+            previousResult: undefined,
+            subtask: undefined
+        }
+        πIteration()
     }
 
+    function πFinalize(){
+        if (πState){
+            if (πState.subtask) πState.subtask.onFinishedChanged.disconnect(πResume)
+        }
+        πState = {}
+    }
+
+    function πResume(){
+        πState.subtask.onFinishedChanged.disconnect(πResume)
+        πState.previousResult = πState.subtask.result
+        exception = πState.subtask.exception
+        πState.subtask = null
+        πIteration()
+    }
+
+    function πIteration(){
+        while (true){
+            let iterableResult = undefined
+            try{
+                if (exception){
+                    iterableResult = iterable.throw(exception)
+                    exception = undefined
+                } else {
+                    iterableResult = iterable.next(πState.previousResult)
+                }
+            } catch (e){
+                console.error(`Task "${objectName}" throws exception: ${e}`)
+                exception = e
+                return
+            }
 
 
+            if (iterableResult.done){
+                result = iterableResult.value
+                finished = true
+                return;
+            }
 
+            if (iterableResult.value === undefined){
+                πState.previousResult = undefined
+                Qt.callLater(function(){root.πIteration()})
+                return
+            }
+
+            if (Async.isTask(iterableResult.value)){
+                πState.subtask = iterableResult.value
+                if (πState.subtask.finished){
+                    πState.previousResult = πState.subtask.result
+                    exception = πState.subtask.exception
+                    πState.subtask = null
+                    continue;
+                }
+                var connection = πState.subtask.onFinishedChanged.connect(πResume)
+                return
+
+            } else {
+
+
+            }
+        }
+    }
 
 
     Component.onDestruction: {
-        if (πInternal) πInternal.funalize()
-
-        //subtask = null
+        πFinalize()
         console.warn("Task ",objectName," onDestruction")
     }
 

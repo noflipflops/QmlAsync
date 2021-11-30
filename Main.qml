@@ -106,26 +106,102 @@ Pane{
         }
 
 
+        CheckBox{
+            id: checkbox
 
-        /*Task{
+        }
+
+        Condition{
+            id: condition
+            predicate: ()=>checkbox.checked
+        }
+
+
+        CheckBox{
+            checked: condition.finished
+        }
+
+
+
+        QtObject{
+            id: common
+            property var commonTask:Async.startTask(function*(){
+                throw new Error("I don't wanna work today")
+                console.error("commonTask 0")
+                yield Async.delay(2000)
+                console.error("commonTask 1")
+                yield Async.delay(2000)
+                console.error("commonTask 2")
+                yield Async.delay(2000)
+                console.error("commonTask 3")
+                return 53
+            })
+
+        }
+
+        Task{
+            id: task
+            objectName: "task"
             iterable: function*(){
-                yield Async.delay(1000)
-                console.error("1000")
-                yield Async.delay(1000)
-
-                iterable = function*(){
-                    console.error("start other")
-                    yield Async.delay(1000)
-                    console.error("finish onher")
-                }()
-
-                console.error("2000")
-                yield Async.delay(1000)
-                console.error("3000")
+                console.log("commonTask returned ", yield common.commonTask)
+                console.error("0")
+                yield Async.delay(2000)
+                console.error("1")
+                yield Async.delay(2000)
+                console.error("2")
+                yield Async.delay(2000)
+                console.error("3")
 
             }()
-        }*/
+        }
 
+        Task{
+            id: task2
+            objectName: "task2"
+            iterable: function*(){
+                console.log("commonTask returned ", yield common.commonTask)
+                console.error("task2 0")
+                yield Async.delay(2000)
+                console.error("task2 1")
+                yield Async.delay(2000)
+                console.error("task2 2")
+                yield Async.delay(2000)
+                console.error("task2 3")
+            }()
+        }
+
+        Button {
+            text: "I changed my mind"
+            onClicked: {
+                task.iterable = function*(){
+                    console.error("start other")
+                    yield Async.delay(5000)
+                    console.error("finish onher")
+                }()
+            }
+        }
+
+        Button {
+            text: "Coroutine"
+            onClicked: Async.startTask(function*(){
+                while (true){
+                    for (var i=0; i<10000; i++){
+                        yield
+                    }
+                    console.log("Coroutine is spinning")
+
+                }
+            })
+
+        }
+
+        Button{
+            text: "Binding"
+            onClicked: {
+                var binding = Qt.binding(function() { return inputHandler.pressed ? "steelblue" : "lightsteelblue" })
+                console.log(typeof binding)
+            }
+        }
 
 
         Button {

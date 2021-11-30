@@ -71,7 +71,7 @@ QtObject {
         return fn.constructor.name === 'GeneratorFunction';
     }
 
-    function keepAlive(object) {
+    /*function keepAlive(object) {
         var result = πKeepAliveCount
         πKeepAlive[πKeepAliveCount] = object
         πKeepAliveCount++
@@ -79,6 +79,6 @@ QtObject {
     }
 
     property int πKeepAliveCount: 0
-    property var πKeepAlive: ({})
+    property var πKeepAlive: ({})*/
 
 }
