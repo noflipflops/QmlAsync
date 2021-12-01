@@ -53,17 +53,33 @@ QtObject {
 
     function πFinalize(){
         if (πState){
-            if (πState.subtask) πState.subtask.onFinishedChanged.disconnect(πResume)
+            if (πState.subtask) πSubTaskDiconnect()
         }
         πState = {}
     }
 
     function πResume(){
-        πState.subtask.onFinishedChanged.disconnect(πResume)
+        πSubTaskDiconnect()
+
         πState.previousResult = πState.subtask.result
         exception = πState.subtask.exception
         πState.subtask = null
         πIteration()
+    }
+
+    function πSubTaskCanceled(){
+        exception = πState.subtask
+        πIteration()
+    }
+
+    function πSubTaskConnect(){
+        πState.subtask.onFinishedChanged.connect(πResume)
+        πState.subtask.Component.onDestruction.connect(πSubTaskCanceled)
+    }
+
+    function πSubTaskDiconnect(){
+        πState.subtask.onFinishedChanged.disconnect(πResume)
+        πState.subtask.Component.onDestruction.disconnect(πSubTaskCanceled)
     }
 
     function πIteration(){
@@ -103,7 +119,8 @@ QtObject {
                     πState.subtask = null
                     continue;
                 }
-                var connection = πState.subtask.onFinishedChanged.connect(πResume)
+
+                πSubTaskConnect()
                 return
 
             } else {

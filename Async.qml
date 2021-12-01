@@ -1,10 +1,8 @@
 pragma Singleton
-import QtQml 2.15
+//import QtQml 2.15
 import QtQuick 2.15
 
 QtObject {
-
-    property var delayComponent: Qt.createComponent("Delay.qml");
 
     /*Component{
         id: delayComponent
@@ -12,28 +10,37 @@ QtObject {
         }
     }*/
 
-    function delay(interval){
-        var obj = delayComponent.createObject(null,{interval: interval})
+    property var delayComponent: Qt.createComponent("Delay.qml");
+
+    function delay(interval, parent, name = ""){
+        var obj = delayComponent.createObject(parent,{interval: interval, objectName: name})
         return obj
     }
 
+
+
     property var fetchComponent: Qt.createComponent("Fetch.qml");
 
-    function fetch(request){
+    function fetch(request, parent, name = ""){
         if (typeof request === "string"){
             request = {
                 url: request
             }
         }
-        var obj = fetchComponent.createObject(null,{request: request})
+        var obj = fetchComponent.createObject(parent,{request: request, objectName: name})
         return obj
     }
 
 
+
     property var taskComponent: Qt.createComponent("Task.qml");
 
-    function startTask(generator){
-        var obj = taskComponent.createObject(null,{iterable: generator()})
+    function startTask(generator, parent, name = ""){
+
+        var obj = taskComponent.createObject(parent,{/*iterable: generator(),*/ objectName: name})
+
+        obj.iterable =  generator.call(obj)
+
         return obj
     }
 
@@ -41,35 +48,13 @@ QtObject {
 
     property var conditionComponent: Qt.createComponent("Condition.qml");
 
-    function condition(predicate){
-        var obj = conditionComponent.createObject(null,{predicate: predicate})
+    function condition(predicate, parent, name = ""){
+        var obj = conditionComponent.createObject(parent,{predicate: predicate, objectName: name})
         return obj
     }
 
-
-
-    function _iterableExecute(iterable, previousResult){
-
-        var iterableResult = iterable.next(previousResult)
-
-
-        if (!iterableResult.done){
-            var task = iterableResult.value
-            if (task.finished){
-                _iterableExecute(iterable, task.result)
-            }else{
-                task.onFinishedChanged.connect(function(){
-                    /*if (task.exception)
-                        iterable.throw(task.exception);
-                    else*/
-                    _iterableExecute(iterable, task.result)
-                })
-            }
-        }
-    }
-
     function isTask(object){
-        if (!object instanceof QtObject) return false
+        //if (!object instanceof QtObject) return false
         return typeof(object.finished) === "boolean"
     }
 

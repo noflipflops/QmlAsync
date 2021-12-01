@@ -1,14 +1,8 @@
 import QtQml 2.15
 
 Timer {
-    property int value: 0
-    //property int interval: 0
-
     Component.onCompleted: {
         console.info("Delay created")
-        //Qt.callLater(function(){finished = true})
-        //setInterval(interval,)
-
     }
 
     running: true

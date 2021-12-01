@@ -123,7 +123,7 @@ Pane{
         }
 
 
-        QtObject{
+        /*QtObject{
             id: common
             property var commonTask:Async.startTask(function*(){
                 //throw new Error("I don't wanna work today")
@@ -137,9 +137,9 @@ Pane{
                 return 53
             })
 
-        }
+        }*/
 
-        Task{
+       /* Task{
             id: task
             objectName: "task"
             iterable: function*(){
@@ -158,13 +158,39 @@ Pane{
                 console.error("3")
 
             }()
-        }
+        }*/
 
         Task{
             id: task2
             objectName: "task2"
             iterable: function*(){
-                yield condition
+
+                //yield* Coroutine.waitMs(10000)
+
+
+                /*var checkboxWatcher = Async.startTask(function*(){
+                    yield Async.condition(()=>checkbox.checked,this)
+                    task2.destroy()
+                },this)
+
+
+                try{
+                    yield Async.delay(5000,token,"Cancelation test")
+                }catch(e){
+                    if (Async.isTask(e)){
+                        console.log("task was canceled")
+                    }else{
+                        throw e
+                    }
+                }*/
+                /*var [google,github] = [
+                            Async.fetch("https://google.com"),
+                            Async.fetch("https://github.com")
+                        ]*/
+
+
+                var m = yield Async.fetch("https://google.com");//yield* [Async.fetch("https://github.io"), Async.fetch("https://google.com")]
+
                 console.error("task2 0")
                 yield Async.delay(2000)
                 console.error("task2 1")
@@ -172,7 +198,8 @@ Pane{
                 console.error("task2 2")
                 yield Async.delay(2000)
                 console.error("task2 3")
-            }()
+            }.call(task2)
+
         }
 
         Button {
@@ -184,7 +211,23 @@ Pane{
                     console.error("finish onher")
                 }()
             }
+
         }
+
+
+        Button {
+            id: token
+            text: "Cancelation"
+
+            onClicked: {
+
+
+
+
+                token.destroy()
+            }
+        }
+
 
         Button {
             text: "Coroutine"
