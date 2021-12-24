@@ -19,9 +19,9 @@ QtObject {
 
 
 
-    property var fetchComponent: Qt.createComponent("Fetch.qml");
+    //property var fetchComponent: Qt.createComponent("Fetch.qml");
 
-    function fetch(request, parent, name = ""){
+    /*function fetch(request, parent, name = ""){
         if (typeof request === "string"){
             request = {
                 url: request
@@ -29,8 +29,24 @@ QtObject {
         }
         var obj = fetchComponent.createObject(parent,{request: request, objectName: name})
         return obj
+    }*/
+
+    function fetch(request, parent, name = ""){
+        if (typeof request === "string"){
+            request = {
+                url: request
+            }
+        }
+        let task = engine.fetch(request, parent)
+        task.objectName = name
+        return task
     }
 
+    function process(program, arguments, parent, name = ""){
+        let task = engine.process(program, arguments, parent)
+        task.objectName = name
+        return task
+    }
 
 
     property var taskComponent: Qt.createComponent("Task.qml");
@@ -39,7 +55,7 @@ QtObject {
 
         var obj = taskComponent.createObject(parent,{/*iterable: generator(),*/ objectName: name})
 
-        obj.iterable =  generator.call(obj)
+        obj.generator =  generator
 
         return obj
     }

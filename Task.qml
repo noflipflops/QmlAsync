@@ -7,7 +7,10 @@ QtObject {
     property var exception
     property bool finished : false
 
-    property var iterable
+    property var generator
+
+
+    property var πIterable
     //property var previousResult
 
     //property var subtask
@@ -15,13 +18,13 @@ QtObject {
     //property var th: root
 
 
-    onIterableChanged: {
+    onGeneratorChanged: {
         if (!πCompleted) return
 
         if (!finished){
             πFinalize()
         }
-        if (iterable){
+        if (generator){
             πRun()
         }
     }
@@ -30,7 +33,7 @@ QtObject {
 
     Component.onCompleted: {
         πCompleted = true
-        if (iterable){
+        if (generator){
             πRun()
         }
         //Async.keepAlive(root)
@@ -44,6 +47,7 @@ QtObject {
     property var πState
 
     function πRun(){
+        πIterable = generator.call(root)
         πState = {
             previousResult: undefined,
             subtask: undefined
@@ -87,10 +91,10 @@ QtObject {
             let iterableResult = undefined
             try{
                 if (exception){
-                    iterableResult = iterable.throw(exception)
+                    iterableResult = πIterable.throw(exception)
                     exception = undefined
                 } else {
-                    iterableResult = iterable.next(πState.previousResult)
+                    iterableResult = πIterable.next(πState.previousResult)
                 }
             } catch (e){
                 console.error(`Task "${objectName}" throws exception: ${e}`)

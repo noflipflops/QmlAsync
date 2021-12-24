@@ -163,8 +163,8 @@ Pane{
         Task{
             id: task2
             objectName: "task2"
-            iterable: function*(){
-
+            generator: function*(){
+                yield Async.condition(() => checkbox.checked)
                 //yield* Coroutine.waitMs(10000)
 
 
@@ -198,18 +198,18 @@ Pane{
                 console.error("task2 2")
                 yield Async.delay(2000)
                 console.error("task2 3")
-            }.call(task2)
+            }
 
         }
 
         Button {
             text: "I changed my mind"
             onClicked: {
-                task.iterable = function*(){
+                task.generator = function*(){
                     console.error("start other")
                     yield Async.delay(5000)
                     console.error("finish onher")
-                }()
+                }
             }
 
         }
@@ -305,15 +305,6 @@ Pane{
 
 
         Button{
-            text: "finishTask"
-            onClicked: {
-                new Promise()
-            }
-        }
-
-
-
-        Button{
             text: "start coroutine"
 
 
@@ -339,13 +330,82 @@ Pane{
                     console.log("after Async.delay(2000)")
                 }()
 
-                Async._iterableExecute(iterable)
+                //Async._iterableExecute(iterable)
 
 
 
             }
 
         }
+
+        ScrollView {
+            id: view
+            width: parent.width
+
+            TextArea{
+                id:  textArea
+                font.pixelSize: 10
+                width: parent.width
+
+            }
+        }
+
+
+
+        Button {
+            text: "Fetch"
+            property var t
+            onClicked: {
+
+                t = Async.startTask(function*(){
+
+                    //var td = new String("hello")
+
+                    var response = yield Async.fetch(
+                                {
+                                    url: "https://reqres.in/api/users/2",
+                                    /*headers: {
+                                        a: "a",
+                                        b: 12
+                                    },*/
+                                    //body: "hello"
+                                })
+
+                    textArea.text = response.json().data.email
+                    //console.log(array)
+                    //var i = 0
+                    //while (true){
+
+                        //console.log(i)
+                        //i++
+                    //}
+                })
+
+
+            }
+
+        }
+
+
+        Label{
+            id: gitVersionLabel
+            text: "git version..."
+        }
+
+        Task {
+            generator: function*(){
+                var gitVersion = (yield Async.process("git",["--version"])).standardOutput.text();
+                gitVersionLabel.text = gitVersion;
+
+                try {
+                    yield Async.process("notExistingCommand")
+                }catch(e){
+                    console.error(e);
+                }
+
+            }
+        }
+
 
     }
 
